@@ -82,6 +82,60 @@ function calculateChargingSchedule(params: ChargingParams): ChargingResult | nul
     };
 }
 
+const STORAGE_KEY = 'ev-charging-calculator-inputs';
+
+interface StoredInputs {
+    voltage: string;
+    batterySize: string;
+    chargingCurrent: string;
+    currentCharge: string;
+    targetCharge: string;
+    completionTime: string;
+    efficiency: string;
+}
+
+function saveInputsToStorage(): void {
+    const inputs: StoredInputs = {
+        voltage: (document.getElementById('voltage') as HTMLInputElement).value,
+        batterySize: (document.getElementById('batterySize') as HTMLInputElement).value,
+        chargingCurrent: (document.getElementById('chargingCurrent') as HTMLInputElement).value,
+        currentCharge: (document.getElementById('currentCharge') as HTMLInputElement).value,
+        targetCharge: (document.getElementById('targetCharge') as HTMLInputElement).value,
+        completionTime: (document.getElementById('completionTime') as HTMLInputElement).value,
+        efficiency: (document.getElementById('efficiency') as HTMLInputElement).value,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+}
+
+function loadInputsFromStorage(): void {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return;
+
+    try {
+        const inputs: StoredInputs = JSON.parse(stored);
+
+        const setIfExists = (id: string, value: string | undefined) => {
+            if (value !== undefined) {
+                const el = document.getElementById(id) as HTMLInputElement;
+                if (el) el.value = value;
+            }
+        };
+
+        setIfExists('voltage', inputs.voltage);
+        setIfExists('batterySize', inputs.batterySize);
+        setIfExists('chargingCurrent', inputs.chargingCurrent);
+        setIfExists('currentCharge', inputs.currentCharge);
+        setIfExists('targetCharge', inputs.targetCharge);
+        setIfExists('completionTime', inputs.completionTime);
+        setIfExists('efficiency', inputs.efficiency);
+
+        // Update efficiency display
+        updateEfficiencyDisplay();
+    } catch (e) {
+        console.warn('Failed to load saved inputs:', e);
+    }
+}
+
 function getInputValue(id: string): number {
     const element = document.getElementById(id) as HTMLInputElement;
     return parseFloat(element.value) || 0;
@@ -176,8 +230,12 @@ function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number)
 }
 
 function initializeApp(): void {
+    // Load saved inputs from localStorage
+    loadInputsFromStorage();
+
     // Create debounced version of handleCalculate for real-time updates
     const debouncedCalculate = debounce(handleCalculate, 150);
+    const debouncedSave = debounce(saveInputsToStorage, 500);
 
     // Set up efficiency slider with real-time updates
     const efficiencySlider = document.getElementById('efficiency');
@@ -185,28 +243,27 @@ function initializeApp(): void {
         efficiencySlider.addEventListener('input', () => {
             updateEfficiencyDisplay();
             debouncedCalculate();
+            debouncedSave();
         });
-    }
-
-    // Set default completion time to 7:00 AM tomorrow
-    const completionTimeInput = document.getElementById('completionTime') as HTMLInputElement;
-    if (completionTimeInput && !completionTimeInput.value) {
-        completionTimeInput.value = '07:00';
     }
 
     // Add real-time calculation on any input change
     const inputs = document.querySelectorAll('input[type="number"], input[type="time"]');
     inputs.forEach(input => {
         // Real-time update on input
-        input.addEventListener('input', () => debouncedCalculate());
+        input.addEventListener('input', () => {
+            debouncedCalculate();
+            debouncedSave();
+        });
 
         // Also update on change (for time picker)
-        input.addEventListener('change', () => handleCalculate());
-
-
+        input.addEventListener('change', () => {
+            handleCalculate();
+            saveInputsToStorage();
+        });
     });
 
-    // Run initial calculation with default values
+    // Run initial calculation with loaded/default values
     handleCalculate();
 }
 

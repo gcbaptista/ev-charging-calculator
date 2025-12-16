@@ -50,6 +50,46 @@ function calculateChargingSchedule(params) {
         isNextDay
     };
 }
+const STORAGE_KEY = 'ev-charging-calculator-inputs';
+function saveInputsToStorage() {
+    const inputs = {
+        voltage: document.getElementById('voltage').value,
+        batterySize: document.getElementById('batterySize').value,
+        chargingCurrent: document.getElementById('chargingCurrent').value,
+        currentCharge: document.getElementById('currentCharge').value,
+        targetCharge: document.getElementById('targetCharge').value,
+        completionTime: document.getElementById('completionTime').value,
+        efficiency: document.getElementById('efficiency').value,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+}
+function loadInputsFromStorage() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored)
+        return;
+    try {
+        const inputs = JSON.parse(stored);
+        const setIfExists = (id, value) => {
+            if (value !== undefined) {
+                const el = document.getElementById(id);
+                if (el)
+                    el.value = value;
+            }
+        };
+        setIfExists('voltage', inputs.voltage);
+        setIfExists('batterySize', inputs.batterySize);
+        setIfExists('chargingCurrent', inputs.chargingCurrent);
+        setIfExists('currentCharge', inputs.currentCharge);
+        setIfExists('targetCharge', inputs.targetCharge);
+        setIfExists('completionTime', inputs.completionTime);
+        setIfExists('efficiency', inputs.efficiency);
+        // Update efficiency display
+        updateEfficiencyDisplay();
+    }
+    catch (e) {
+        console.warn('Failed to load saved inputs:', e);
+    }
+}
 function getInputValue(id) {
     const element = document.getElementById(id);
     return parseFloat(element.value) || 0;
@@ -138,30 +178,35 @@ function debounce(func, wait) {
     };
 }
 function initializeApp() {
+    // Load saved inputs from localStorage
+    loadInputsFromStorage();
     // Create debounced version of handleCalculate for real-time updates
     const debouncedCalculate = debounce(handleCalculate, 150);
+    const debouncedSave = debounce(saveInputsToStorage, 500);
     // Set up efficiency slider with real-time updates
     const efficiencySlider = document.getElementById('efficiency');
     if (efficiencySlider) {
         efficiencySlider.addEventListener('input', () => {
             updateEfficiencyDisplay();
             debouncedCalculate();
+            debouncedSave();
         });
-    }
-    // Set default completion time to 7:00 AM tomorrow
-    const completionTimeInput = document.getElementById('completionTime');
-    if (completionTimeInput && !completionTimeInput.value) {
-        completionTimeInput.value = '07:00';
     }
     // Add real-time calculation on any input change
     const inputs = document.querySelectorAll('input[type="number"], input[type="time"]');
     inputs.forEach(input => {
         // Real-time update on input
-        input.addEventListener('input', () => debouncedCalculate());
+        input.addEventListener('input', () => {
+            debouncedCalculate();
+            debouncedSave();
+        });
         // Also update on change (for time picker)
-        input.addEventListener('change', () => handleCalculate());
+        input.addEventListener('change', () => {
+            handleCalculate();
+            saveInputsToStorage();
+        });
     });
-    // Run initial calculation with default values
+    // Run initial calculation with loaded/default values
     handleCalculate();
 }
 // Initialize when DOM is ready
