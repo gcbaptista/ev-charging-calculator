@@ -1,0 +1,16 @@
+{
+  "name": "ev-charging-time-calculator",
+  "version": "1.0.0",
+  "description": "EV Charging Schedule Calculator for GitHub Pages",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "serve": "npx serve ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "private": true
+}

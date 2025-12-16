@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV Charging Schedule Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <h1>EV Charging Calculator</h1>
+            </div>
+            <p class="subtitle">Calculate when to start charging to reach your target by a specific time</p>
+        </header>
+
+        <main>
+            <section class="input-section">
+                <h2>Charging Parameters</h2>
+                
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label for="voltage">
+                            <span class="label-text">Average Voltage</span>
+                            <span class="label-unit">V</span>
+                        </label>
+                        <input type="number" id="voltage" value="228" min="100" max="500" step="1">
+                        <span class="input-hint">From Tesla app (e.g., 228V)</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="batterySize">
+                            <span class="label-text">Battery Pack Size</span>
+                            <span class="label-unit">kWh</span>
+                        </label>
+                        <input type="number" id="batterySize" value="60" min="10" max="200" step="0.1">
+                        <span class="input-hint">Model 3 SR: 60 | LR: 82 kWh</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="chargingCurrent">
+                            <span class="label-text">Charging Current</span>
+                            <span class="label-unit">A</span>
+                        </label>
+                        <input type="number" id="chargingCurrent" value="20" min="6" max="80" step="1">
+                        <span class="input-hint">From Tesla app (e.g., 20/32A)</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="currentCharge">
+                            <span class="label-text">Current Charge Level</span>
+                            <span class="label-unit">%</span>
+                        </label>
+                        <input type="number" id="currentCharge" value="36" min="0" max="100" step="1">
+                        <span class="input-hint">Current battery percentage</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="targetCharge">
+                            <span class="label-text">Target Charge Limit</span>
+                            <span class="label-unit">%</span>
+                        </label>
+                        <input type="number" id="targetCharge" value="80" min="1" max="100" step="1">
+                        <span class="input-hint">Desired charge percentage</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="completionTime">
+                            <span class="label-text">Charged By</span>
+                            <span class="label-unit">Time</span>
+                        </label>
+                        <input type="time" id="completionTime" value="07:00">
+                        <span class="input-hint">When you need the car ready</span>
+                    </div>
+                </div>
+
+                <div class="efficiency-group">
+                    <label for="efficiency">
+                        <span class="label-text">Charging Efficiency</span>
+                        <span class="efficiency-value" id="efficiencyValue">88%</span>
+                    </label>
+                    <input type="range" id="efficiency" value="88" min="80" max="98" step="1">
+                    <span class="input-hint">Tesla typical: 88% (calculated from 4kW actual vs 4.56kW theoretical)</span>
+                </div>
+
+
+            </section>
+
+            <section class="results-section" id="resultsSection">
+                <h2>Charging Schedule</h2>
+                
+                <div class="result-card primary">
+                    <div class="result-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="result-content">
+                        <span class="result-label">Start Charging At</span>
+                        <span class="result-value" id="startTime">--:--</span>
+                    </div>
+                </div>
+
+                <div class="result-cards-grid">
+                    <div class="result-card">
+                        <div class="result-content">
+                            <span class="result-label">Charging Duration</span>
+                            <span class="result-value" id="duration">-- hrs -- min</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="result-content">
+                            <span class="result-label">Energy Required</span>
+                            <span class="result-value" id="energyRequired">-- kWh</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="result-content">
+                            <span class="result-label">Charging Power</span>
+                            <span class="result-value" id="chargingPower">-- kW</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <div class="result-content">
+                            <span class="result-label">Effective Rate</span>
+                            <span class="result-value" id="effectiveRate">-- kW</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-card" id="summaryCard">
+                    <p id="summaryText">Enter your charging parameters and click Calculate to see your schedule.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>EV Charging Schedule Calculator • Built for GitHub Pages</p>
+        </footer>
+    </div>
+
+    <script src="dist/index.js"></script>
+</body>
+</html>
+
